@@ -1,13 +1,5 @@
 import { Kernel } from '@onkernel/sdk';
-import { browser, type SyncBrowserSession } from 'vibium/sync';
-
-type KernelBrowserRawResponse = {
-  session_id?: string;
-  webdriver_ws_url?: string;
-  browser_live_view_url?: string | null;
-  cdp_ws_url?: string;
-  [key: string]: unknown;
-};
+import { browser, type Browser } from 'vibium';
 
 function maskWebSocketURL(rawUrl: string): string {
   try {
@@ -18,36 +10,26 @@ function maskWebSocketURL(rawUrl: string): string {
   }
 }
 
-function assertString(value: unknown, fieldName: string): string {
-  if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`expected ${fieldName} to be a non-empty string`);
-  }
-  return value;
-}
-
 async function main(): Promise<void> {
   const kernel = new Kernel();
 
   let sessionID: string | undefined;
-  let bro: SyncBrowserSession | undefined;
+  let bro: Browser | undefined;
 
   try {
-    // TODO: replace raw response parsing once the published SDK exposes webdriver_ws_url.
-    const response = await kernel.browsers.create().asResponse();
-
-    const rawBrowser = (await response.json()) as KernelBrowserRawResponse;
-    sessionID = assertString(rawBrowser.session_id, 'session_id');
-    const webdriverWsURL = assertString(rawBrowser.webdriver_ws_url, 'webdriver_ws_url');
+    const kernelBrowser = await kernel.browsers.create();
+    sessionID = kernelBrowser.session_id;
+    const webdriverWsURL = kernelBrowser.webdriver_ws_url;
 
     console.log(`created Kernel browser session ${sessionID}`);
     console.log(`using BiDi endpoint ${maskWebSocketURL(webdriverWsURL)}`);
 
-    bro = browser.start(webdriverWsURL);
-    const page = bro.page();
+    bro = await browser.start(webdriverWsURL);
+    const page = await bro.page();
 
-    page.go('https://example.com');
-    const title = page.title();
-    const h1 = page.find('h1').text();
+    await page.go('https://example.com');
+    const title = await page.title();
+    const h1 = await page.find('h1').text();
 
     console.log(`page title: ${title}`);
     console.log(`h1 text: ${h1}`);
@@ -63,7 +45,7 @@ async function main(): Promise<void> {
     console.log('TypeScript example completed successfully');
   } finally {
     if (bro) {
-      bro.stop();
+      await bro.stop();
     }
 
     if (sessionID) {

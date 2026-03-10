@@ -1,2 +1,2 @@
-kernel==0.42.1
+kernel==0.43.0
 vibium==26.3.9

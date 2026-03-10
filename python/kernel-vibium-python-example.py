@@ -2,20 +2,10 @@
 
 from __future__ import annotations
 
-import os
-from typing import Any, cast
 from urllib.parse import urlparse
 
 from kernel import Kernel
 from vibium.sync_api import browser
-
-
-def require_string(payload: dict[str, Any], key: str) -> str:
-    value = payload.get(key)
-    if not isinstance(value, str) or not value:
-        raise RuntimeError(f"expected {key} to be a non-empty string")
-    return value
-
 
 def mask_ws_url(raw_url: str) -> str:
     parsed = urlparse(raw_url)
@@ -29,12 +19,9 @@ def main() -> None:
     bro = None
 
     try:
-        # TODO: replace raw response parsing once the published SDK exposes webdriver_ws_url.
-        raw_response = client.browsers.with_raw_response.create()
-        raw_browser = cast(dict[str, Any], raw_response.json())
-
-        session_id = require_string(raw_browser, "session_id")
-        webdriver_ws_url = require_string(raw_browser, "webdriver_ws_url")
+        kernel_browser = client.browsers.create()
+        session_id = kernel_browser.session_id
+        webdriver_ws_url = kernel_browser.webdriver_ws_url
 
         print(f"created Kernel browser session {session_id}")
         print(f"using BiDi endpoint {mask_ws_url(webdriver_ws_url)}")

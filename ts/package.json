@@ -8,7 +8,7 @@
     "start": "node dist/kernel-vibium-node-example.js"
   },
   "dependencies": {
-    "@onkernel/sdk": "^0.42.1",
+    "@onkernel/sdk": "^0.43.0",
     "vibium": "^26.3.9"
   },
   "devDependencies": {

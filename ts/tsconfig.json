@@ -11,5 +11,5 @@
     "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["kernel-vibium-node-example.ts", "vibium-sync.d.ts"]
+  "include": ["kernel-vibium-node-example.ts"]
 }
