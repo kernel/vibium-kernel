@@ -4,7 +4,11 @@ import { browser, type Browser } from 'vibium';
 function maskWebSocketURL(rawUrl: string): string {
   try {
     const url = new URL(rawUrl);
-    return `${url.protocol}//${url.host}${url.pathname}`;
+    const jwt = url.searchParams.get('jwt');
+    if (jwt !== null) {
+      url.searchParams.set('jwt', `${jwt.slice(0, 4)}***`);
+    }
+    return url.toString();
   } catch {
     return '<unparseable webdriver url>';
   }

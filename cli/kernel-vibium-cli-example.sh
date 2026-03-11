@@ -6,6 +6,8 @@ browser_json=""
 session_id=""
 
 cleanup() {
+  vibium stop >/dev/null 2>&1 || true
+
   if [[ -n "${session_id}" ]]; then
     kernel browsers delete "${session_id}" >/dev/null 2>&1 || true
   fi
@@ -20,11 +22,31 @@ trap cleanup EXIT
 mask_ws_url() {
   python3 - "$1" <<'PY'
 import sys
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 value = sys.argv[1]
 parsed = urlparse(value)
-print(f"{parsed.scheme}://{parsed.netloc}{parsed.path}")
+
+query = []
+for key, raw_value in parse_qsl(parsed.query, keep_blank_values=True):
+    if key == "jwt":
+        masked = f"{raw_value[:4]}***" if raw_value else "***"
+        query.append((key, masked))
+    else:
+        query.append((key, raw_value))
+
+print(
+    urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            urlencode(query, safe="*"),
+            parsed.fragment,
+        )
+    )
+)
 PY
 }
 
@@ -41,10 +63,10 @@ main() {
     exit 1
   fi
 
-  export VIBIUM_CONNECT_URL="${webdriver_ws_url}"
-
   echo "created Kernel browser session ${session_id}"
   echo "using BiDi endpoint $(mask_ws_url "${webdriver_ws_url}")"
+  echo "starting Vibium session"
+  vibium start "${webdriver_ws_url}" >/dev/null
   echo "navigating to https://example.com"
 
   vibium go https://example.com

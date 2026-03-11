@@ -2,14 +2,30 @@
 
 from __future__ import annotations
 
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from kernel import Kernel
 from vibium.sync_api import browser
 
 def mask_ws_url(raw_url: str) -> str:
     parsed = urlparse(raw_url)
-    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+    query = []
+    for key, value in parse_qsl(parsed.query, keep_blank_values=True):
+        if key == "jwt":
+            query.append((key, f"{value[:4]}***" if value else "***"))
+        else:
+            query.append((key, value))
+
+    return urlunparse(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            urlencode(query, safe="*"),
+            parsed.fragment,
+        )
+    )
 
 
 def main() -> None:
