@@ -24,10 +24,19 @@ Set this environment variable before running anything:
 export KERNEL_API_KEY="your-kernel-api-key"
 ```
 
+You will also want:
+
+- Node 20+
+- Python 3.11+
+- `jq`
+
 Install the tools you need:
 
 ```bash
 # CLI
+# Kernel (See https://www.kernel.sh/docs/quickstart#1-install-the-kernel-cli)
+npm install -g @onkernel/cli
+# Vibium
 npm install -g vibium
 
 # TypeScript
@@ -41,12 +50,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-You will also want:
 
-- `kernel` CLI
-- `jq`
-- Python 3.11+
-- Node 20+
 
 ## CLI Example
 
